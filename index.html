@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEKKEN (1998) - Arcade Classic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background-color: #000;
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 4px, 4px 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .crt-effect {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.7) 100%);
+      pointer-events: none;
+      z-index: 99;
+    }
+
+    .pixelated {
+      image-rendering: pixelated;
+    }
+
+    .character-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+    }
+
+    .health-bar {
+      height: 20px;
+      transition: width 0.3s ease;
+    }
+
+    .fight-area {
+      background-image: url('https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/4a5d4338-0a6e-4a4b-ae29-1c1c2a1a6a5d/d4h7q5k-4e5e1c7e-6b1c-4c2b-8a8e-4c3c4b4b4b4b.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzRhNWQ0MzM4LTBhNmUtNGE0Yi1hZTI5LTFjMWMyYTFhNmE1ZFwvZDRoN3E1ay00ZTVlMWM3ZS02YjFjLTRjMmItOGE4ZS00YzNjNGI0YjRiNGIucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.9QJjZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQZQ');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .character-sprite {
+      position: absolute;
+      bottom: 100px;
+      width: 150px;
+      height: 250px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      transition: left 0.2s ease;
+    }
+
+    .hit-effect {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-image: url('https://www.fightersgeneration.com/characters4/kazuya-hit.gif');
+      background-size: contain;
+      z-index: 10;
+      opacity: 0;
+    }
+
+    .combo-counter {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      color: gold;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+      opacity: 0;
+    }
+
+    .arcade-button {
+      position: relative;
+      border-radius: 50%;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5);
+      transition: all 0.1s ease;
+    }
+
+    .arcade-button:active {
+      transform: translateY(5px);
+      box-shadow: none;
+    }
+
+    .arcade-stick {
+      background: linear-gradient(135deg, #333 0%, #111 100%);
+      border-radius: 50%;
+      box-shadow: 0 10px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    .arcade-stick:active {
+      transform: translateY(5px);
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.5);
+    }
+
+    @keyframes flicker {
+      0% {
+        opacity: 0.8;
+      }
+
+      5% {
+        opacity: 0.5;
+      }
+
+      10% {
+        opacity: 0.6;
+      }
+
+      15% {
+        opacity: 0.85;
+      }
+
+      25% {
+        opacity: 0.5;
+      }
+
+      30% {
+        opacity: 1;
+      }
+
+      35% {
+        opacity: 0.1;
+      }
+
+      40% {
+        opacity: 0.25;
+      }
+
+      45% {
+        opacity: 0.5;
+      }
+
+      60% {
+        opacity: 1;
+      }
+
+      70% {
+        opacity: 0.85;
+      }
+
+      80% {
+        opacity: 0.4;
+      }
+
+      90% {
+        opacity: 0.5;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .flicker {
+      animation: flicker 2s infinite;
+    }
+
+    @keyframes shake {
+      0% {
+        transform: translate(0, 0);
+      }
+
+      10% {
+        transform: translate(-5px, 0);
+      }
+
+      20% {
+        transform: translate(5px, 0);
+      }
+
+      30% {
+        transform: translate(-5px, 0);
+      }
+
+      40% {
+        transform: translate(5px, 0);
+      }
+
+      50% {
+        transform: translate(-5px, 0);
+      }
+
+      60% {
+        transform: translate(5px, 0);
+      }
+
+      70% {
+        transform: translate(-5px, 0);
+      }
+
+      80% {
+        transform: translate(5px, 0);
+      }
+
+      90% {
+        transform: translate(-5px, 0);
+      }
+
+      100% {
+        transform: translate(0, 0);
+      }
+    }
+
+    .shake {
+      animation: shake 0.5s;
+    }
+
+    @keyframes flash {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.2;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .flash {
+      animation: flash 0.2s;
+    }
+  </style>
+</head>
+
+<body class="relative">
+  <!-- CRT and scanline effects -->
+  <div class="scanlines"></div>
+  <div class="crt-effect"></div>
+
+  <!-- Main container -->
+  <div class="min-h-screen flex flex-col">
+    <!-- Arcade header -->
+    <header class="bg-red-900 py-4 border-b-4 border-yellow-500">
+      <div class="container mx-auto text-center">
+        <h1 class="text-4xl md:text-6xl text-yellow-400 flicker">TEKKEN</h1>
+        <p class="text-yellow-200 mt-2">THE KING OF IRON FIST TOURNAMENT</p>
+      </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+      <!-- Screen sections -->
+      <div id="main-menu" class="text-center">
+        <div class="bg-gray-900 border-4 border-gray-700 rounded-lg p-8 max-w-2xl mx-auto">
+          <h2 class="text-3xl text-red-500 mb-8">SELECT MODE</h2>
+          <div class="grid grid-cols-1 gap-4">
+            <button onclick="showCharacterSelect()" class="bg-red-700 hover:bg-red-600 text-white py-4 px-6 rounded-lg border-2 border-yellow-500 text-xl transition-all hover:scale-105">
+                            ARCADE MODE
+                        </button>
+            <button class="bg-blue-700 hover:bg-blue-600 text-white py-4 px-6 rounded-lg border-2 border-yellow-500 text-xl transition-all hover:scale-105">
+                            VS MODE
+                        </button>
+            <button class="bg-green-700 hover:bg-green-600 text-white py-4 px-6 rounded-lg border-2 border-yellow-500 text-xl transition-all hover:scale-105">
+                            PRACTICE
+                        </button>
+            <button class="bg-purple-700 hover:bg-purple-600 text-white py-4 px-6 rounded-lg border-2 border-yellow-500 text-xl transition-all hover:scale-105">
+                            OPTIONS
+                        </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Character selection screen (hidden by default) -->
+      <div id="character-select" class="hidden">
+        <div class="bg-gray-900 border-4 border-gray-700 rounded-lg p-8">
+          <h2 class="text-3xl text-red-500 mb-8 text-center">SELECT YOUR FIGHTER</h2>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <!-- Character cards -->
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('kazuya')">
+              <img src="https://www.fightersgeneration.com/characters4/kazuya-mishima-tk1-sprite.gif" alt="Kazuya Mishima" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">KAZUYA</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('paul')">
+              <img src="https://www.fightersgeneration.com/characters4/paul-phoenix-tk1-sprite.gif" alt="Paul Phoenix" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">PAUL</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('nina')">
+              <img src="https://www.fightersgeneration.com/characters4/nina-williams-tk1-sprite.gif" alt="Nina Williams" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">NINA</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('king')">
+              <img src="https://www.fightersgeneration.com/characters4/king-tk1-sprite.gif" alt="King" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">KING</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('yoshimitsu')">
+              <img src="https://www.fightersgeneration.com/characters4/yoshimitsu-tk1-sprite.gif" alt="Yoshimitsu" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">YOSHIMITSU</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('lei')">
+              <img src="https://www.fightersgeneration.com/characters4/lei-wulong-tk1-sprite.gif" alt="Lei Wulong" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">LEI</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('law')">
+              <img src="https://www.fightersgeneration.com/characters4/marshall-law-tk1-sprite.gif" alt="Marshall Law" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">LAW</h3>
+            </div>
+            <div
+              class="character-card bg-gray-800 rounded-lg p-4 border-2 border-gray-600 cursor-pointer transition-all"
+              onclick="selectCharacter('heihachi')">
+              <img src="https://www.fightersgeneration.com/characters4/heihachi-mishima-tk1-sprite.gif" alt="Heihachi Mishima" class="w-full h-48 object-contain pixelated">
+              <h3 class="text-center text-yellow-400 mt-2">HEIHACHI</h3>
+            </div>
+          </div>
+
+          <div class="flex justify-center">
+            <button onclick="startFight()" class="bg-green-600 hover:bg-green-500 text-white py-3 px-8 rounded-lg border-2 border-yellow-500 text-xl transition-all hover:scale-105">
+                            FIGHT!
+                        </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fight screen (hidden by default) -->
+      <div id="fight-screen" class="hidden">
+        <div class="relative fight-area h-96 w-full rounded-lg overflow-hidden border-4 border-gray-700">
+          <!-- Player 1 health bar -->
+          <div class="absolute top-4 left-4 w-1/3 bg-gray-700 rounded-sm">
+            <div id="player1-health" class="health-bar bg-red-600 rounded-sm" style="width: 100%"></div>
+          </div>
+
+          <!-- Player 2 health bar -->
+          <div class="absolute top-4 right-4 w-1/3 bg-gray-700 rounded-sm">
+            <div id="player2-health" class="health-bar bg-blue-600 rounded-sm" style="width: 100%"></div>
+          </div>
+
+          <!-- Timer -->
+          <div
+            class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-1 rounded-lg border border-yellow-500">
+            <span id="fight-timer">60</span>
+          </div>
+
+          <!-- Player 1 character -->
+          <div id="player1" class="character-sprite left-20"
+            style="background-image: url('https://www.fightersgeneration.com/characters4/kazuya-mishima-tk1-sprite.gif')">
+          </div>
+
+          <!-- Player 2 character -->
+          <div id="player2" class="character-sprite right-20"
+            style="background-image: url('https://www.fightersgeneration.com/characters4/paul-phoenix-tk1-sprite.gif')">
+          </div>
+
+          <!-- Hit effect -->
+          <div id="hit-effect" class="hit-effect"></div>
+
+          <!-- Combo counter -->
+          <div id="combo-counter" class="combo-counter">COMBO 5!</div>
+
+          <!-- Round text -->
+          <div id="round-text"
+            class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-4xl text-yellow-400 bg-black bg-opacity-70 px-8 py-4 rounded-lg hidden">
+            ROUND 1 - FIGHT!
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Player 1 controls -->
+          <div class="bg-gray-800 p-4 rounded-lg border-2 border-red-600">
+            <h3 class="text-red-400 text-center mb-4">PLAYER 1 CONTROLS</h3>
+            <div class="flex justify-center space-x-4">
+              <div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                  <button class="arcade-button bg-red-500 w-12 h-12" onclick="movePlayer('left')">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                  <button class="arcade-button bg-red-500 w-12 h-12" onclick="movePlayer('up')">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </button>
+                  <button class="arcade-button bg-red-500 w-12 h-12" onclick="movePlayer('right')">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                  <div class="w-12 h-12"></div>
+                  <button class="arcade-button bg-red-500 w-12 h-12" onclick="movePlayer('down')">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                  <div class="w-12 h-12"></div>
+                </div>
+              </div>
+              <div class="flex flex-col space-y-2">
+                <button class="arcade-button bg-blue-500 w-12 h-12" onclick="playerAttack('punch')">
+                                    <i class="fas fa-hand-rock"></i>
+                                </button>
+                <button class="arcade-button bg-green-500 w-12 h-12" onclick="playerAttack('kick')">
+                                    <i class="fas fa-shoe-prints"></i>
+                                </button>
+                <button class="arcade-button bg-yellow-500 w-12 h-12" onclick="playerAttack('special')">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Game info -->
+          <div class="bg-gray-800 p-4 rounded-lg border-2 border-yellow-500">
+            <h3 class="text-yellow-400 text-center mb-4">GAME INFO</h3>
+            <div class="text-sm">
+              <p class="mb-2"><span class="text-red-400">P1:</span> <span id="p1-name">KAZUYA</span></p>
+              <p class="mb-2"><span class="text-blue-400">P2:</span> <span id="p2-name">PAUL</span></p>
+              <p class="mb-2">ROUND: <span id="round-number">1</span></p>
+              <p>STAGE: KING OF IRON FIST</p>
+            </div>
+            <div class="mt-4">
+              <button onclick="endFight()" class="bg-red-600 hover:bg-red-500 text-white py-2 px-4 rounded-lg border border-yellow-500 text-sm transition-all">
+                                EXIT FIGHT
+                            </button>
+            </div>
+          </div>
+
+          <!-- Player 2 controls -->
+          <div class="bg-gray-800 p-4 rounded-lg border-2 border-blue-600">
+            <h3 class="text-blue-400 text-center mb-4">PLAYER 2 CONTROLS</h3>
+            <div class="flex justify-center space-x-4">
+              <div class="flex flex-col space-y-2">
+                <button class="arcade-button bg-blue-500 w-12 h-12" onclick="enemyAttack('punch')">
+                                    <i class="fas fa-hand-rock"></i>
+                                </button>
+                <button class="arcade-button bg-green-500 w-12 h-12" onclick="enemyAttack('kick')">
+                                    <i class="fas fa-shoe-prints"></i>
+                                </button>
+                <button class="arcade-button bg-yellow-500 w-12 h-12" onclick="enemyAttack('special')">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+              </div>
+              <div>
+                <div class="grid grid-cols-3 gap-2 mb-4">
+                  <button class="arcade-button bg-blue-500 w-12 h-12" onclick="moveEnemy('left')">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </button>
+                  <button class="arcade-button bg-blue-500 w-12 h-12" onclick="moveEnemy('up')">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </button>
+                  <button class="arcade-button bg-blue-500 w-12 h-12" onclick="moveEnemy('right')">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                  <div class="w-12 h-12"></div>
+                  <button class="arcade-button bg-blue-500 w-12 h-12" onclick="moveEnemy('down')">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </button>
+                  <div class="w-12 h-12"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Arcade footer -->
+    <footer class="bg-gray-900 py-4 border-t-4 border-yellow-500">
+      <div class="container mx-auto text-center text-yellow-200 text-sm">
+        <p>© 1998 NAMCO LTD. ALL RIGHTS RESERVED.</p>
+        <p class="mt-1">ARCADE VERSION 3.02</p>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Game state
+        const gameState = {
+            player1: {
+                name: "KAZUYA",
+                health: 100,
+                position: 20,
+                sprite: "https://www.fightersgeneration.com/characters4/kazuya-mishima-tk1-sprite.gif"
+            },
+            player2: {
+                name: "PAUL",
+                health: 100,
+                position: 80,
+                sprite: "https://www.fightersgeneration.com/characters4/paul-phoenix-tk1-sprite.gif"
+            },
+            round: 1,
+            timer: 60,
+            timerInterval: null,
+            isFighting: false
+        };
+        
+        // Character sprites
+        const characterSprites = {
+            kazuya: "https://www.fightersgeneration.com/characters4/kazuya-mishima-tk1-sprite.gif",
+            paul: "https://www.fightersgeneration.com/characters4/paul-phoenix-tk1-sprite.gif",
+            nina: "https://www.fightersgeneration.com/characters4/nina-williams-tk1-sprite.gif",
+            king: "https://www.fightersgeneration.com/characters4/king-tk1-sprite.gif",
+            yoshimitsu: "https://www.fightersgeneration.com/characters4/yoshimitsu-tk1-sprite.gif",
+            lei: "https://www.fightersgeneration.com/characters4/lei-wulong-tk1-sprite.gif",
+            law: "https://www.fightersgeneration.com/characters4/marshall-law-tk1-sprite.gif",
+            heihachi: "https://www.fightersgeneration.com/characters4/heihachi-mishima-tk1-sprite.gif"
+        };
+        
+        // Show character selection screen
+        function showCharacterSelect() {
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('character-select').classList.remove('hidden');
+        }
+        
+        // Select character
+        function selectCharacter(character) {
+            gameState.player1.name = character.toUpperCase();
+            gameState.player1.sprite = characterSprites[character];
+            
+            // Random opponent
+            const characters = Object.keys(characterSprites).filter(c => c !== character);
+            const randomOpponent = characters[Math.floor(Math.random() * characters.length)];
+            gameState.player2.name = randomOpponent.toUpperCase();
+            gameState.player2.sprite = characterSprites[randomOpponent];
+            
+            // Update names display
+            document.getElementById('p1-name').textContent = gameState.player1.name;
+            document.getElementById('p2-name').textContent = gameState.player2.name;
+        }
+        
+        // Start fight
+        function startFight() {
+            document.getElementById('character-select').classList.add('hidden');
+            document.getElementById('fight-screen').classList.remove('hidden');
+            
+            // Reset game state
+            gameState.player1.health = 100;
+            gameState.player2.health = 100;
+            gameState.timer = 60;
+            gameState.round = 1;
+            gameState.isFighting = true;
+            
+            // Update UI
+            document.getElementById('player1-health').style.width = '100%';
+            document.getElementById('player2-health').style.width = '100%';
+            document.getElementById('fight-timer').textContent = gameState.timer;
+            document.getElementById('round-number').textContent = gameState.round;
+            
+            // Set character sprites
+            document.getElementById('player1').style.backgroundImage = `url('${gameState.player1.sprite}')`;
+            document.getElementById('player2').style.backgroundImage = `url('${gameState.player2.sprite}')`;
+            
+            // Start timer
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            gameState.timerInterval = setInterval(updateTimer, 1000);
+            
+            // Show round text
+            const roundText = document.getElementById('round-text');
+            roundText.textContent = `ROUND ${gameState.round} - FIGHT!`;
+            roundText.classList.remove('hidden');
+            
+            setTimeout(() => {
+                roundText.classList.add('hidden');
+            }, 2000);
+        }
+        
+        // Update timer
+        function updateTimer() {
+            gameState.timer--;
+            document.getElementById('fight-timer').textContent = gameState.timer;
+            
+            if (gameState.timer <= 0) {
+                clearInterval(gameState.timerInterval);
+                // Time's up logic
+            }
+        }
+        
+        // End fight
+        function endFight() {
+            document.getElementById('fight-screen').classList.add('hidden');
+            document.getElementById('main-menu').classList.remove('hidden');
+            
+            clearInterval(gameState.timerInterval);
+            gameState.isFighting = false;
+        }
+        
+        // Move player
+        function movePlayer(direction) {
+            const player = document.getElementById('player1');
+            let currentLeft = parseInt(player.style.left) || 20;
+            
+            switch(direction) {
+                case 'left':
+                    if (currentLeft > 10) {
+                        player.style.left = (currentLeft - 10) + 'px';
+                    }
+                    break;
+                case 'right':
+                    if (currentLeft < 40) {
+                        player.style.left = (currentLeft + 10) + 'px';
+                    }
+                    break;
+                case 'up':
+                    // Jump animation could be added here
+                    break;
+                case 'down':
+                    // Crouch animation could be added here
+                    break;
+            }
+        }
+        
+        // Move enemy
+        function moveEnemy(direction) {
+            const enemy = document.getElementById('player2');
+            let currentLeft = parseInt(enemy.style.left) || 80;
+            
+            switch(direction) {
+                case 'left':
+                    if (currentLeft > 60) {
+                        enemy.style.left = (currentLeft - 10) + 'px';
+                    }
+                    break;
+                case 'right':
+                    if (currentLeft < 90) {
+                        enemy.style.left = (currentLeft + 10) + 'px';
+                    }
+                    break;
+                case 'up':
+                    // Jump animation could be added here
+                    break;
+                case 'down':
+                    // Crouch animation could be added here
+                    break;
+            }
+        }
+        
+        // Player attack
+        function playerAttack(type) {
+            if (!gameState.isFighting) return;
+            
+            const player = document.getElementById('player1');
+            const enemy = document.getElementById('player2');
+            const hitEffect = document.getElementById('hit-effect');
+            const comboCounter = document.getElementById('combo-counter');
+            
+            // Calculate distance between players
+            const playerLeft = parseInt(player.style.left) || 20;
+            const enemyLeft = parseInt(enemy.style.left) || 80;
+            const distance = Math.abs(playerLeft - enemyLeft);
+            
+            if (distance < 40) { // Attack hits
+                // Random damage
+                let damage = 0;
+                switch(type) {
+                    case 'punch':
+                        damage = Math.floor(Math.random() * 10) + 5;
+                        break;
+                    case 'kick':
+                        damage = Math.floor(Math.random() * 15) + 5;
+                        break;
+                    case 'special':
+                        damage = Math.floor(Math.random() * 20) + 10;
+                        break;
+                }
+                
+                // Apply damage
+                gameState.player2.health = Math.max(0, gameState.player2.health - damage);
+                document.getElementById('player2-health').style.width = gameState.player2.health + '%';
+                
+                // Show hit effect
+                hitEffect.style.left = (enemyLeft - 20) + 'px';
+                hitEffect.style.opacity = '1';
+                
+                // Random chance for combo
+                if (Math.random() > 0.7) {
+                    const comboCount = Math.floor(Math.random() * 5) + 2;
+                    comboCounter.textContent = `COMBO ${comboCount}!`;
+                    comboCounter.style.opacity = '1';
+                    
+                    setTimeout(() => {
+                        comboCounter.style.opacity = '0';
+                    }, 1000);
+                }
+                
+                // Shake enemy
+                enemy.classList.add('shake');
+                
+                // Flash health bar
+                document.getElementById('player2-health').classList.add('flash');
+                
+                setTimeout(() => {
+                    hitEffect.style.opacity = '0';
+                    enemy.classList.remove('shake');
+                    document.getElementById('player2-health').classList.remove('flash');
+                }, 300);
+                
+                // Check if enemy is defeated
+                if (gameState.player2.health <= 0) {
+                    setTimeout(() => {
+                        nextRound();
+                    }, 1000);
+                }
+            }
+        }
+        
+        // Enemy attack
+        function enemyAttack(type) {
+            if (!gameState.isFighting) return;
+            
+            const player = document.getElementById('player1');
+            const enemy = document.getElementById('player2');
+            const hitEffect = document.getElementById('hit-effect');
+            
+            // Calculate distance between players
+            const playerLeft = parseInt(player.style.left) || 20;
+            const enemyLeft = parseInt(enemy.style.left) || 80;
+            const distance = Math.abs(playerLeft - enemyLeft);
+            
+            if (distance < 40) { // Attack hits
+                // Random damage
+                let damage = 0;
+                switch(type) {
+                    case 'punch':
+                        damage = Math.floor(Math.random() * 10) + 5;
+                        break;
+                    case 'kick':
+                        damage = Math.floor(Math.random() * 15) + 5;
+                        break;
+                    case 'special':
+                        damage = Math.floor(Math.random() * 20) + 10;
+                        break;
+                }
+                
+                // Apply damage
+                gameState.player1.health = Math.max(0, gameState.player1.health - damage);
+                document.getElementById('player1-health').style.width = gameState.player1.health + '%';
+                
+                // Show hit effect
+                hitEffect.style.left = (playerLeft - 20) + 'px';
+                hitEffect.style.opacity = '1';
+                
+                // Shake player
+                player.classList.add('shake');
+                
+                // Flash health bar
+                document.getElementById('player1-health').classList.add('flash');
+                
+                setTimeout(() => {
+                    hitEffect.style.opacity = '0';
+                    player.classList.remove('shake');
+                    document.getElementById('player1-health').classList.remove('flash');
+                }, 300);
+                
+                // Check if player is defeated
+                if (gameState.player1.health <= 0) {
+                    setTimeout(() => {
+                        gameOver();
+                    }, 1000);
+                }
+            }
+        }
+      
+        function nextRound() {
+            gameState.round++;
+            
+            if (gameState.round > 3) {
+                // Player wins
+                const roundText = document.getElementById('round-text');
+                roundText.textContent = "YOU WIN!";
+                roundText.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    endFight();
+                }, 3000);
+            } else {
+                // Reset for next round
+                gameState.player1.health = 100;
+                gameState.player2.health = 100;
+                gameState.timer = 60;
+                
+                document.getElementById('player1-health').style.width = '100%';
+                document.getElementById('player2-health').style.width = '100%';
+                document.getElementById('fight-timer').textContent = gameState.timer;
+                document.getElementById('round-number').textContent = gameState.round;
+                
+                // Show round text
+                const roundText = document.getElementById('round-text');
+                roundText.textContent = `ROUND ${gameState.round} - FIGHT!`;
+                roundText.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    roundText.classList.add('hidden');
+                }, 2000);
+            }
+        }
+        
+        // Game over
+        function gameOver() {
+            const roundText = document.getElementById('round-text');
+            roundText.textContent = "GAME OVER";
+            roundText.classList.remove('hidden');
+            
+            setTimeout(() => {
+                endFight();
+            }, 3000);
+        }
+        
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.isFighting) return;
+            
+            switch(e.key) {
+                case 'ArrowLeft':
+                    movePlayer('left');
+                    break;
+                case 'ArrowRight':
+                    movePlayer('right');
+                    break;
+                case 'ArrowUp':
+                    movePlayer('up');
+                    break;
+                case 'ArrowDown':
+                    movePlayer('down');
+                    break;
+                case 'a':
+                case 'A':
+                    playerAttack('punch');
+                    break;
+                case 's':
+                case 'S':
+                    playerAttack('kick');
+                    break;
+                case 'd':
+                case 'D':
+                    playerAttack('special');
+                    break;
+            }
+        });
+  </script>
+</body>
+
+</html>
